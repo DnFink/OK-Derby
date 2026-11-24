@@ -307,13 +307,27 @@ try {
 }
 assert(renderOk, 'Game.draw() and Assets rendered all 3 stages, bosses, obstacles, and vehicles without error');
 
-// 4i. Independent SFX & Music Mute controls
+// 4i. Independent SFX & Music Mute controls & Theme Lifecycle
 assert(typeof AudioEngine.toggleSound === 'function' && typeof AudioEngine.toggleMusic === 'function', 'AudioEngine has independent SFX and Music mute toggles');
 const initialMute = AudioEngine.isMuted;
 const initialMusicMute = AudioEngine.isMusicMuted;
 AudioEngine.toggleSound();
 assert(AudioEngine.isMuted === !initialMute && AudioEngine.isMusicMuted === initialMusicMute, 'Toggling SFX mute does not alter Music mute state');
 AudioEngine.toggleSound(); // restore
+
+// Verify init starts main theme, stage levels set level1/2/3, and resume preserves active stage theme
+Game.showScreen('main-menu-screen');
+assert(AudioEngine.currentTheme === 'main' && AudioEngine.shouldPlayMusic === true, 'Main menu plays main theme');
+Game.startLevel(2);
+assert(AudioEngine.currentTheme === 'level2' && AudioEngine.shouldPlayMusic === true, 'Stage 2 plays level2 theme');
+Game.togglePause();
+assert(AudioEngine.shouldPlayMusic === false, 'Pausing stops music');
+Game.togglePause();
+assert(AudioEngine.currentTheme === 'level2' && AudioEngine.shouldPlayMusic === true, 'Unpausing Stage 2 resumes level2 theme (does not revert to main)');
+Game.startLevel(3);
+assert(AudioEngine.currentTheme === 'level3', 'Stage 3 plays level3 theme');
+Game.showScreen('level-select-screen');
+assert(AudioEngine.currentTheme === 'main' && AudioEngine.shouldPlayMusic === true, 'Returning to Stage Select plays main menu theme');
 
 // 4j. Villain Competitor across all 3 stages and Easy/Medium/Hard difficulties
 console.log('\n--- Running Villain Competitor Verification Suite ---');

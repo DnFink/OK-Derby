@@ -201,6 +201,7 @@ const Game = {
         } catch (e) {}
         this.bindEvents();
         this.setVillainDifficulty(this.villainDifficulty);
+        AudioEngine.startMusic('main');
         
         // Menu animation loop
         setInterval(() => {
@@ -387,7 +388,7 @@ const Game = {
             });
         }
         
-        if (id === 'main-menu-screen') {
+        if (id !== 'game-screen') {
             AudioEngine.startMusic('main');
         }
     },

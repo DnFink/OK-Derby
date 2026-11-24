@@ -10,14 +10,17 @@ const AudioEngine = {
     musicGain: null,
     musicInterval: null,
     currentNote: 0,
+    shouldPlayMusic: false,
+    unlockBound: false,
     
     // Themes for different screens/levels
     themes: {
         main: {
-            notes: [261.63, 0, 329.63, 0, 392.00, 0, 523.25, 0, 392.00, 0, 329.63, 0],
-            type: 'sine',
-            interval: 300,
-            volume: 0.1
+            // Warm, breezy Hawaiian island menu melody (C major / G / Am / F island feel)
+            notes: [261.63, 329.63, 392.00, 523.25, 440.00, 392.00, 329.63, 0, 293.66, 349.23, 440.00, 392.00, 329.63, 293.66, 261.63, 0],
+            type: 'triangle',
+            interval: 240,
+            volume: 0.14
         },
         level1: {
             // Breezy major Hawaiian ukulele melody
@@ -31,7 +34,7 @@ const AudioEngine = {
             notes: [196.00, 220.00, 261.63, 0, 220.00, 261.63, 293.66, 0, 261.63, 293.66, 329.63, 0, 293.66, 261.63, 220.00, 196.00],
             type: 'triangle',
             interval: 180,
-            volume: 0.12
+            volume: 0.13
         },
         level3: {
             // Fiery, dramatic volcanic tempo
@@ -45,46 +48,111 @@ const AudioEngine = {
 
     init() {
         try {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            this.audioCtx = new AudioContext();
+            if (!this.audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    this.audioCtx = new AudioContext();
+                }
+            }
         } catch (e) {
             console.warn("Web Audio API not supported");
+        }
+        this.bindUnlockListeners();
+    },
+
+    bindUnlockListeners() {
+        if (this.unlockBound || typeof window === 'undefined' || !window.addEventListener) return;
+        this.unlockBound = true;
+        const handleFirstGesture = () => {
+            this.unlock();
+        };
+        window.addEventListener('pointerdown', handleFirstGesture);
+        window.addEventListener('keydown', handleFirstGesture);
+        window.addEventListener('touchstart', handleFirstGesture);
+    },
+
+    unlock() {
+        if (!this.audioCtx) this.init();
+        if (!this.audioCtx) return;
+
+        const onUnlocked = () => {
+            if (this.shouldPlayMusic && !this.isMusicMuted && !this.musicInterval) {
+                this.startMusic(this.currentTheme);
+            }
+        };
+
+        if (this.audioCtx.state === 'suspended') {
+            try {
+                const res = this.audioCtx.resume();
+                if (res && typeof res.then === 'function') {
+                    res.then(onUnlocked).catch(() => {});
+                } else {
+                    onUnlocked();
+                }
+            } catch (e) {}
+        } else {
+            onUnlocked();
         }
     },
 
     toggleSound() {
+        this.unlock();
         this.isMuted = !this.isMuted;
         return this.isMuted;
     },
 
     toggleMusic() {
+        this.unlock();
         this.isMusicMuted = !this.isMusicMuted;
         return this.isMusicMuted;
     },
 
-    startMusic(theme = 'main') {
+    startMusic(theme = null) {
         if (!this.audioCtx) this.init();
-        
-        // Update current theme if a new one is provided and valid
-        if (theme && this.themes[theme]) {
-            this.currentTheme = theme;
-        }
+
+        const targetTheme = (theme && this.themes[theme])
+            ? theme
+            : (this.themes[this.currentTheme] ? this.currentTheme : 'main');
+        const themeChanged = targetTheme !== this.currentTheme;
+        this.currentTheme = targetTheme;
+        this.shouldPlayMusic = true;
 
         if (this.isMusicMuted || !this.audioCtx) return;
-        if (this.musicInterval) this.stopMusic();
+
+        // If already playing this exact theme, keep it flowing seamlessly
+        if (this.musicInterval && !themeChanged) {
+            if (this.audioCtx.state === 'suspended') {
+                this.unlock();
+            }
+            return;
+        }
+
+        if (this.musicInterval) {
+            clearInterval(this.musicInterval);
+            this.musicInterval = null;
+        }
 
         const themeData = this.themes[this.currentTheme];
         this.currentNote = 0;
-        
-        this.musicInterval = setInterval(() => {
-            if (this.isMusicMuted) return;
+
+        const playNextNote = () => {
+            if (this.isMusicMuted || !this.audioCtx) return;
+            // Don't schedule notes while browser autoplay policy holds AudioContext suspended
+            if (this.audioCtx.state === 'suspended') return;
             const freq = themeData.notes[this.currentNote % themeData.notes.length];
-            if (freq > 0) this.playTone(freq, themeData.type, themeData.volume, themeData.interval / 1000 * 0.75, true);
+            if (freq > 0) {
+                this.playTone(freq, themeData.type, themeData.volume, (themeData.interval / 1000) * 0.8, true);
+            }
             this.currentNote++;
-        }, themeData.interval);
+        };
+
+        // Play first note right away if unlocked, then continue on beat
+        playNextNote();
+        this.musicInterval = setInterval(playNextNote, themeData.interval);
     },
 
     stopMusic() {
+        this.shouldPlayMusic = false;
         if (this.musicInterval) {
             clearInterval(this.musicInterval);
             this.musicInterval = null;
@@ -93,7 +161,10 @@ const AudioEngine = {
 
     playTone(freq, type = 'square', vol = 0.1, dur = 0.1, isMusic = false) {
         if (!this.audioCtx || (isMusic ? this.isMusicMuted : this.isMuted)) return;
-        if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+        if (this.audioCtx.state === 'suspended') {
+            try { this.audioCtx.resume(); } catch (e) {}
+            if (this.audioCtx.state === 'suspended') return;
+        }
 
         const osc = this.audioCtx.createOscillator();
         const gain = this.audioCtx.createGain();
