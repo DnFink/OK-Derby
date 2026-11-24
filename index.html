@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OK Derby - Jungle Racing</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300..900&family=Bungee&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Parallax Background Elements -->
+        <div class="parallax-bg">
+            <div class="sky"></div>
+            <div class="clouds"></div>
+            <div class="mountains"></div>
+            <div class="jungle-floor"></div>
+        </div>
+
+        <!-- Main Menu -->
+        <div id="main-menu-screen" class="menu-screen active">
+            <header class="game-header animate-float">
+                <h1 class="game-title">OK <span class="accent-text">DERBY</span></h1>
+                <p class="game-subtitle">Hawaiian Tiki Adventure</p>
+            </header>
+
+            <div class="menu-card glass-panel">
+                <div class="character-preview-container">
+                    <canvas id="menu-char-canvas" width="160" height="120"></canvas>
+                    <p class="pulse-text">Rev your engines!</p>
+                </div>
+
+                <div class="menu-actions">
+                    <button id="btn-campaign" class="btn btn-primary btn-large">
+                        <i class="fa-solid fa-play"></i> Start Derby
+                    </button>
+                    <button id="btn-select-character" class="btn btn-tertiary">
+                        <i class="fa-solid fa-car-side"></i> Select Vehicle
+                    </button>
+                    <button id="btn-how-to-play" class="btn btn-info">
+                        <i class="fa-solid fa-circle-question"></i> How to Play
+                    </button>
+                </div>
+
+                <div class="difficulty-selector-inline" aria-label="Villain Difficulty">
+                    <span class="difficulty-label"><i class="fa-solid fa-skull-crossbones"></i> Rival Difficulty:</span>
+                    <div class="difficulty-pills">
+                        <button class="btn-diff" data-difficulty="easy">Easy</button>
+                        <button class="btn-diff active" data-difficulty="medium">Medium</button>
+                        <button class="btn-diff" data-difficulty="hard">Hard</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-control-fixed glass-panel-sm">
+                <button id="btn-toggle-global-sound" class="btn btn-round" title="Toggle Sound">
+                    <i class="fa-solid fa-volume-up"></i>
+                </button>
+                <button id="btn-toggle-global-music" class="btn btn-round" title="Toggle Music">
+                    <i class="fa-solid fa-music"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Vehicle Selection Screen -->
+        <div id="character-select-screen" class="menu-screen">
+            <button class="btn btn-back btn-round glass-panel-sm" data-target="main-menu-screen">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            
+            <h2 class="section-title">Select Your <span class="accent-text">Vehicle</span></h2>
+            
+            <div class="character-grid">
+                <div class="char-card active glass-panel" data-character="jeep">
+                    <div class="char-card-canvas-wrapper">
+                        <canvas id="char-jeep-canvas" width="140" height="100"></canvas>
+                    </div>
+                    <h3 class="char-name">Aloha Cruiser</h3>
+                    <p class="char-desc">A wood-paneled 4x4 adorned with flowers and carrying a surfboard! Balanced all-around handling.</p>
+                    <div class="char-stats">
+                        <span>Speed: ★★★★☆</span>
+                        <span>Power: ★★★☆☆</span>
+                    </div>
+                </div>
+
+                <div class="char-card glass-panel" data-character="speeder">
+                    <div class="char-card-canvas-wrapper">
+                        <canvas id="char-speeder-canvas" width="140" height="100"></canvas>
+                    </div>
+                    <h3 class="char-name">Surf Speeder</h3>
+                    <p class="char-desc">A sleek koa hover-board that skims over waves with higher top speed and extended 6.5s Rescue Surf!</p>
+                    <div class="char-stats">
+                        <span>Speed: ★★★★★</span>
+                        <span>Rescue: 6.5s</span>
+                    </div>
+                </div>
+
+                <div class="char-card glass-panel" data-character="tank">
+                    <div class="char-card-canvas-wrapper">
+                        <canvas id="char-tank-canvas" width="140" height="100"></canvas>
+                    </div>
+                    <h3 class="char-name">Tiki Boom-Cart</h3>
+                    <p class="char-desc">Carved from a koa trunk. Its heavy launcher fires up to 4 shots dealing 2x damage!</p>
+                    <div class="char-stats">
+                        <span>Speed: ★★★☆☆</span>
+                        <span>Power: ★★★★★ (2x)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="btn-confirm-character" class="btn btn-primary btn-large">Confirm Selection</button>
+        </div>
+
+        <!-- Level Select Screen -->
+        <div id="level-select-screen" class="menu-screen">
+            <button class="btn btn-back btn-round glass-panel-sm" data-target="main-menu-screen">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+
+            <h2 class="section-title">Derby <span class="accent-text">Stages</span></h2>
+
+            <div class="difficulty-panel glass-panel-sm">
+                <div class="difficulty-panel-header">
+                    <span class="difficulty-label"><i class="fa-solid fa-skull-crossbones"></i> Villain Competitor Difficulty</span>
+                    <span id="difficulty-desc-text" class="difficulty-desc">Tiki Bandit — Competitive pace with steady bombs, traps &amp; rival goons.</span>
+                </div>
+                <div class="difficulty-pills">
+                    <button class="btn-diff" data-difficulty="easy">
+                        <i class="fa-solid fa-leaf"></i> Easy
+                    </button>
+                    <button class="btn-diff active" data-difficulty="medium">
+                        <i class="fa-solid fa-fire"></i> Medium
+                    </button>
+                    <button class="btn-diff" data-difficulty="hard">
+                        <i class="fa-solid fa-skull"></i> Hard
+                    </button>
+                </div>
+            </div>
+
+            <div class="levels-container">
+                <div class="level-card glass-panel" data-level="1">
+                    <div class="level-badge">Stage 1</div>
+                    <div class="level-details">
+                        <h3 class="level-name">Waikiki Sands</h3>
+                        <p class="level-description">Cruise over Tiki posts and jump over turquoise ocean waves. Defeat the Tiki Crab to free the helper bird!</p>
+                    </div>
+                    <button class="btn btn-start-level btn-primary">Play</button>
+                </div>
+
+                <div class="level-card glass-panel" data-level="2">
+                    <div class="level-badge">Stage 2</div>
+                    <div class="level-details">
+                        <h3 class="level-name">Waimea Canopy</h3>
+                        <p class="level-description">Climb steep ramps high in the tropical canopy. Defeat the giant Tiki Totem!</p>
+                    </div>
+                    <button class="btn btn-start-level btn-primary">Play</button>
+                </div>
+
+                <div class="level-card glass-panel" data-level="3">
+                    <div class="level-badge">Stage 3</div>
+                    <div class="level-details">
+                        <h3 class="level-name">Volcano Caldera</h3>
+                        <p class="level-description">Avoid the bubbling lava floor, ride volcanic steam vents, and escape Pele's fiery guardian!</p>
+                    </div>
+                    <button class="btn btn-start-level btn-primary">Play</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- How To Play Modal -->
+        <div id="how-to-play-screen" class="menu-screen">
+            <button class="btn btn-back btn-round glass-panel-sm" data-target="main-menu-screen">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+
+            <h2 class="section-title">How To <span class="accent-text">Play</span></h2>
+
+            <div class="how-to-card glass-panel">
+                <div class="how-to-section">
+                    <h3><i class="fa-solid fa-keyboard"></i> Controls</h3>
+                    <ul class="controls-list">
+                        <li><span><kbd>A</kbd> / <kbd>D</kbd> or <kbd>←</kbd> / <kbd>→</kbd></span> Drive Left / Right</li>
+                        <li><span><kbd>Space</kbd> / <kbd>W</kbd> / <kbd>↑</kbd></span> Launch / Jump</li>
+                        <li><span><kbd>W</kbd> / <kbd>S</kbd> or <kbd>↑</kbd> / <kbd>↓</kbd></span> Fly Up / Down (during Lei Flight)</li>
+                        <li><span><kbd>Shift</kbd></span> Hold to Boost Speed (x1.5)</li>
+                        <li><span><kbd>C</kbd> or <kbd>X</kbd></span> Shoot Coconut Bombs</li>
+                        <li><span><kbd>F</kbd> or <kbd>Z</kbd></span> Shoot Pineapple Bubbles (High Arc)</li>
+                        <li><span><kbd>Q</kbd></span> Deploy Rescue Board/Boat (or Auto-Saves once per stage)</li>
+                        <li><span><kbd>Esc</kbd></span> Pause Game</li>
+                    </ul>
+                </div>
+                <div class="how-to-section">
+                    <h3><i class="fa-solid fa-star"></i> Mechanics</h3>
+                    <div class="mechanics-grid">
+                        <div class="mechanic-item">
+                            <i class="fa-solid fa-water"></i>
+                            <strong>Ocean & Lava Gaps:</strong> Build enough speed on ramps to jump over ocean and lava hazards.
+                        </div>
+                        <div class="mechanic-item">
+                            <i class="fa-solid fa-bug"></i>
+                            <strong>Minions:</strong> Jump on top of beach crabs and bugs or blast them. Crashing into them is fatal!
+                        </div>
+                        <div class="mechanic-item">
+                            <i class="fa-solid fa-skull"></i>
+                            <strong>Bosses:</strong> Defeat island bosses by shooting them or jumping on their heads!
+                        </div>
+                        <div class="mechanic-item">
+                            <i class="fa-solid fa-dove"></i>
+                            <strong>I'iwi Bird:</strong> Defeating a boss frees a caged scarlet honeycreeper bird that flies you with a flower lei!
+                        </div>
+                        <div class="mechanic-item">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <strong>Tiki Spikes:</strong> Deadly spikes (urchins/bamboo) causing an instant wreck on contact. Jump over them!
+                        </div>
+                        <div class="mechanic-item">
+                            <i class="fa-solid fa-cubes"></i>
+                            <strong>Tiki Totems:</strong> Wooden barriers blocking movement. Stand on them or shoot twice to destroy them.
+                        </div>
+                        <div class="mechanic-item">
+                            <i class="fa-solid fa-fire"></i>
+                            <strong>Tiki Fire Jets:</strong> Stone heads shooting periodic flame columns. Safe to pass when inactive.
+                        </div>
+                        <div class="mechanic-item">
+                            <i class="fa-solid fa-skull-crossbones"></i>
+                            <strong>Villain Competitor:</strong> Races you to the finish on every stage! Instead of fighting enemies, he drops time-bombs, spiked traps, and his own rival goons. Shoot or stomp him to stun him!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="menu-screen">
+            <div id="game-hud" class="glass-panel-sm">
+                <div class="hud-item hud-level">
+                    <span class="hud-label">ISLAND</span>
+                    <span id="hud-level-val" class="hud-value">1</span>
+                </div>
+                <div class="hud-item hud-score">
+                    <span class="hud-label">SCORE</span>
+                    <span id="hud-score-val" class="hud-value">00000</span>
+                </div>
+                <div class="hud-item hud-lives">
+                    <i class="fa-solid fa-heart" style="color: #ff7675;"></i>
+                    <span id="hud-lives-val" class="hud-value">3</span>
+                </div>
+                <div class="hud-item hud-special">
+                    <span class="hud-label">RESCUE</span>
+                    <span id="hud-special-badge" class="hud-special-badge ready">READY</span>
+                </div>
+                <div class="hud-item hud-rival">
+                    <span class="hud-label">RACE POS</span>
+                    <span id="hud-rival-badge" class="hud-rival-badge leading">1ST • MED</span>
+                </div>
+                <div class="hud-item hud-bird-time" id="hud-bird-container" style="display: none;">
+                    <span class="hud-label" style="color: #ff7675;">LEI FLIGHT</span>
+                    <span id="hud-bird-val" class="hud-value">10.0</span>
+                </div>
+                <div class="hud-actions">
+                    <button id="btn-game-pause" class="btn btn-round-sm" title="Pause Game">
+                        <i class="fa-solid fa-pause"></i>
+                    </button>
+                    <button id="btn-game-exit" class="btn btn-round-sm btn-danger" title="Exit Game">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="game-canvas" width="960" height="540"></canvas>
+                
+                <div id="pause-overlay" class="overlay-panel">
+                    <div class="glass-panel text-center">
+                        <h2>GAME PAUSED</h2>
+                        <div class="overlay-buttons">
+                            <button id="btn-resume-game" class="btn btn-primary">Resume</button>
+                            <button id="btn-restart-level" class="btn btn-secondary">Restart Stage</button>
+                            <button id="btn-pause-exit" class="btn btn-danger">Exit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="gameover-overlay" class="overlay-panel">
+                    <div class="glass-panel text-center">
+                        <h2 class="accent-text text-large animate-flash">WRECKED!</h2>
+                        <p>Your vehicle fell into the hazard or was destroyed.</p>
+                        <div class="overlay-buttons">
+                            <button id="btn-retry-level" class="btn btn-primary">Try Again</button>
+                            <button id="btn-gameover-exit" class="btn btn-danger">Menu</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="victory-overlay" class="overlay-panel">
+                    <div class="glass-panel text-center">
+                        <h2 class="success-text text-large animate-float">STAGE CLEAR!</h2>
+                        <p>You survived the Derby!</p>
+                        <div class="overlay-buttons">
+                            <button id="btn-next-level" class="btn btn-primary">Next Stage</button>
+                            <button id="btn-victory-exit" class="btn btn-secondary">Menu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Game Scripts -->
+    <script src="audio.js?v=3"></script>
+    <script src="assets.js?v=3"></script>
+    <script src="game.js?v=3"></script>
+</body>
+</html>

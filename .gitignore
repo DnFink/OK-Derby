@@ -1,0 +1,16 @@
+# Personal brainstorm photos (~5 MB)
+brainstorm images/
+
+# Obsolete one-off development patch scripts
+apply_respawn.py
+debug_regex.js
+modify.js
+
+# OS & editor artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+node_modules/
+*.log
