@@ -11,7 +11,7 @@ Welcome to **OK Derby**, a browser-based Hawaiian Tiki vehicle platforming & rac
 ## Controls
 
 * **A / D** or **Left / Right Arrows**: Drive and accelerate
-* **Space / W / Up Arrow**: Launch / Jump off ramps and platforms
+* **Space / W / Up Arrow**: Launch / Jump (tap again in mid-air to Double Jump!)
 * **W / S** or **Up / Down Arrows**: Fly Up / Down (during Lei Flight)
 * **Shift**: Hold to Boost (x1.5 speed)
 * **C or X**: Shoot Coconut Bombs

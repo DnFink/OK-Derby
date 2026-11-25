@@ -189,6 +189,10 @@ const AudioEngine = {
                 this.playTone(400, 'sine', 0.3, 0.2);
                 setTimeout(() => this.playTone(600, 'sine', 0.3, 0.3), 50);
                 break;
+            case 'doubleJump':
+                this.playTone(540, 'sine', 0.28, 0.16);
+                setTimeout(() => this.playTone(820, 'triangle', 0.28, 0.22), 45);
+                break;
             case 'shoot':
                 this.playTone(800, 'triangle', 0.2, 0.1);
                 setTimeout(() => this.playTone(400, 'triangle', 0.2, 0.1), 30);

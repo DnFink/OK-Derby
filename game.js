@@ -15,9 +15,9 @@ const Game = {
             name: 'Chill Rival',
             shortLabel: 'EASY',
             desc: 'Chill Rival — Relaxed pace with occasional bombs, traps & rival goons.',
-            baseSpeed: 3.1,
-            aheadSpeed: 2.0,
-            behindSpeed: 5.0,
+            baseSpeed: 2.5,
+            aheadSpeed: 1.6,
+            behindSpeed: 4.1,
             dropMinCd: 150,
             dropMaxCd: 210,
             maxTraps: 4,
@@ -32,9 +32,9 @@ const Game = {
             name: 'Tiki Bandit',
             shortLabel: 'MED',
             desc: 'Tiki Bandit — Competitive pace with steady bombs, traps & rival goons.',
-            baseSpeed: 4.3,
-            aheadSpeed: 2.9,
-            behindSpeed: 6.6,
+            baseSpeed: 3.5,
+            aheadSpeed: 2.4,
+            behindSpeed: 5.4,
             dropMinCd: 95,
             dropMaxCd: 145,
             maxTraps: 6,
@@ -49,9 +49,9 @@ const Game = {
             name: 'Baron Kahuna',
             shortLabel: 'HARD',
             desc: 'Baron Kahuna — Blistering speed, frequent bombs, traps & armored goons!',
-            baseSpeed: 5.5,
-            aheadSpeed: 4.0,
-            behindSpeed: 8.4,
+            baseSpeed: 4.5,
+            aheadSpeed: 3.3,
+            behindSpeed: 6.8,
             dropMinCd: 55,
             dropMaxCd: 90,
             maxTraps: 8,
@@ -86,8 +86,10 @@ const Game = {
     player: {
         x: 100, y: 100, w: 60, h: 40,
         vx: 0, vy: 0,
-        speedCap: 8.5, accel: 0.32, friction: 0.95,
+        speedCap: 6.8, accel: 0.24, friction: 0.95,
         jumpForce: 12.5,
+        maxJumps: 2,
+        jumpsRemaining: 2,
         jumpGraceTimer: 0,
         projectileDamage: 1,
         maxProjectiles: 3,
@@ -214,11 +216,30 @@ const Game = {
     },
 
     triggerJump() {
-        if (this.gameState === 'playing' && this.player.isGrounded && !this.player.isFlying) {
+        if (this.gameState !== 'playing' || this.player.isFlying || this.player.dead) return;
+
+        if (this.player.isGrounded) {
             this.player.vy = -this.player.jumpForce;
             this.player.isGrounded = false;
+            this.player.jumpsRemaining = this.player.maxJumps - 1;
             this.player.jumpGraceTimer = 6;
             AudioEngine.playSFX('jump');
+        } else if (this.player.jumpsRemaining > 0) {
+            // Mid-air double jump!
+            this.player.vy = -this.player.jumpForce * 0.92;
+            this.player.jumpsRemaining = 0;
+            this.player.jumpGraceTimer = 6;
+            AudioEngine.playSFX('doubleJump');
+            for (let p = 0; p < 12; p++) {
+                this.particles.push({
+                    x: this.player.x + this.player.w * (0.2 + Math.random() * 0.6),
+                    y: this.player.y + this.player.h,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: 1.5 + Math.random() * 3,
+                    life: 20,
+                    color: p % 2 === 0 ? '#ffffff' : '#fdcb6e'
+                });
+            }
         }
     },
 
@@ -241,7 +262,7 @@ const Game = {
             if ((e.key === 'q' || e.key === 'Q') && this.gameState === 'playing') {
                 this.deploySpecialRescue();
             }
-            if ((e.code === 'Space' || e.code === 'ArrowUp' || e.key === 'w' || e.key === 'W') && this.gameState === 'playing') {
+            if ((e.code === 'Space' || e.code === 'ArrowUp' || e.key === 'w' || e.key === 'W') && this.gameState === 'playing' && !e.repeat) {
                 this.triggerJump();
             }
         });
@@ -515,6 +536,7 @@ const Game = {
         this.player.vx = 0;
         this.player.vy = 0;
         this.player.jumpGraceTimer = 0;
+        this.player.jumpsRemaining = this.player.maxJumps;
         this.player.isFlying = false;
         this.player.flyTimer = 0;
         this.player.dead = false;
@@ -534,22 +556,22 @@ const Game = {
 
         // Apply distinct vehicle stats
         if (this.selectedVehicle === 'jeep') {
-            this.player.speedCap = 8.5;
-            this.player.accel = 0.32;
+            this.player.speedCap = 6.8;
+            this.player.accel = 0.24;
             this.player.jumpForce = 12.5;
             this.player.projectileDamage = 1;
             this.player.maxProjectiles = 3;
             this.player.specialDuration = 300; // 5.0s
         } else if (this.selectedVehicle === 'speeder') {
-            this.player.speedCap = 9.5;
-            this.player.accel = 0.38;
+            this.player.speedCap = 7.6;
+            this.player.accel = 0.28;
             this.player.jumpForce = 13.0;
             this.player.projectileDamage = 1;
             this.player.maxProjectiles = 3;
             this.player.specialDuration = 390; // 6.5s
         } else if (this.selectedVehicle === 'tank') {
-            this.player.speedCap = 8.0;
-            this.player.accel = 0.28;
+            this.player.speedCap = 6.3;
+            this.player.accel = 0.21;
             this.player.jumpForce = 12.0;
             this.player.projectileDamage = 2; // 2x damage!
             this.player.maxProjectiles = 4;   // 4 max shots!
@@ -788,6 +810,7 @@ const Game = {
             this.player.y = (this.player.lastSafeY !== null ? this.player.lastSafeY : 360) - 80;
             this.player.vx = 0;
             this.player.vy = 0;
+            this.player.jumpsRemaining = this.player.maxJumps;
             this.player.isInvincible = true;
             this.player.invincibilityTimer = 120;
             this.player.dead = false;
@@ -1109,6 +1132,7 @@ const Game = {
                 this.player.vy = 0;
             }
             this.player.isGrounded = true;
+            this.player.jumpsRemaining = this.player.maxJumps;
 
             // Only save lastSafeX/Y if grounded on a solid wood platform free of nearby hazards
             if (!isOnSwamp && !isOnElevator && !isOnRamp && !isOnTotem) {
@@ -1476,6 +1500,7 @@ const Game = {
                 if (v.activeTimer === 0) {
                     this.player.vy = -16;
                     this.player.isGrounded = false;
+                    this.player.jumpsRemaining = 1;
                     this.player.jumpGraceTimer = 6;
                     v.activeTimer = 35;
                     AudioEngine.playSFX('jump');
@@ -1567,6 +1592,7 @@ const Game = {
                 // Jump on top
                 if (this.player.vy > 0 && this.player.y + this.player.h - this.player.vy <= minion.y + 16) {
                     this.player.vy = -10;
+                    this.player.jumpsRemaining = 1;
                     this.player.jumpGraceTimer = 4;
                     minion.hp = (minion.hp || 1) - 1;
                     minion.hitTimer = 10;
@@ -1781,6 +1807,7 @@ const Game = {
                 // Jump on top (always bounce player even if boss is in invincibility frames)
                 if (this.player.vy > 0 && this.player.y + this.player.h - this.player.vy <= this.boss.y - bossHitH * 0.2) {
                     this.player.vy = -14;
+                    this.player.jumpsRemaining = 1;
                     this.player.jumpGraceTimer = 6;
                     if (this.boss.hitInvincible === 0) {
                         this.boss.hp -= this.player.projectileDamage;
@@ -2226,6 +2253,7 @@ const Game = {
             if (this.player.vy > 0 && this.player.y + this.player.h - this.player.vy <= v.y + 18) {
                 // Stomp villain roof to stun him and bounce safely!
                 this.player.vy = -12;
+                this.player.jumpsRemaining = 1;
                 this.player.jumpGraceTimer = 5;
                 this.stunVillain(200);
             } else if (v.stunTimer <= 0 && !this.player.isInvincible) {

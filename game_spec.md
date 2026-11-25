@@ -17,9 +17,9 @@ Players select from three unique vehicles, each with custom canvas rendering and
 
 | Vehicle Name | Key ID | Canvas Render Style | Speed Cap | Acceleration | Driving Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Aloha Cruiser** | `jeep` | Wood-paneled 4x4, hibiscus flower designs, carrying a surfboard. | `8.5` | `0.32` | Balanced standard vehicle; excellent all-around handling. |
-| **Surf Speeder** | `speeder` | Sleek koa-wood hoverboard skimming above the track. | `9.5` | `0.38` | High top speed, agile jump (`13.0`), and extended `6.5s` Rescue Surfboard. |
-| **Tiki Boom-Cart** | `tank` | Heavy hollowed-out koa trunk cart with a coconut launcher. | `8.0` | `0.28` | Heavy trunk cart; fires up to 4 projectiles dealing `2x` damage. |
+| **Aloha Cruiser** | `jeep` | Wood-paneled 4x4, hibiscus flower designs, carrying a surfboard. | `6.8` | `0.24` | Balanced standard vehicle; excellent all-around handling. |
+| **Surf Speeder** | `speeder` | Sleek koa-wood hoverboard skimming above the track. | `7.6` | `0.28` | High top speed, agile jump (`13.0`), and extended `6.5s` Rescue Surfboard. |
+| **Tiki Boom-Cart** | `tank` | Heavy hollowed-out koa trunk cart with a coconut launcher. | `6.3` | `0.21` | Heavy trunk cart; fires up to 4 projectiles dealing `2x` damage. |
 
 ---
 
@@ -28,7 +28,7 @@ The game handles key events globally:
 
 *   **Move Left / Right:** `A` / `D` or `Left` / `Right` Arrow Keys.
 *   **Boost (Speed Multiplier x1.5):** Hold `Shift` (Left or Right).
-*   **Launch / Jump:** `Spacebar`, `W`, or `Up` Arrow (when grounded on solid surfaces, totems, elevators, or ramps).
+*   **Launch / Jump & Double Jump:** `Spacebar`, `W`, or `Up` Arrow (press once when grounded, press again mid-air for a Double Jump).
 *   **Flight Altitude Control:** `W` / `S` or `Up` / `Down` Arrow Keys (during active Lei Flight).
 *   **Shoot Coconut Bombs:** `C` or `X` (Damages boss, totems & minions; max 3–4 on screen).
 *   **Shoot Pineapple Bubbles:** `F` or `Z` (Floatier high-arc projectile; max 3–4 on screen).

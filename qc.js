@@ -196,15 +196,29 @@ console.log('\n--- Running Gameplay Mechanics & Regression Suite ---');
 // 4a. Distinct Vehicle Stats
 Game.selectedVehicle = 'jeep';
 Game.startLevel(1);
-assert(Game.player.speedCap === 8.5 && Game.player.projectileDamage === 1, 'Jeep stats applied correctly');
+assert(Game.player.speedCap === 6.8 && Game.player.projectileDamage === 1, 'Jeep stats applied correctly');
 
 Game.selectedVehicle = 'speeder';
 Game.startLevel(1);
-assert(Game.player.speedCap === 9.5 && Game.player.specialDuration === 390, 'Speeder stats applied correctly');
+assert(Game.player.speedCap === 7.6 && Game.player.specialDuration === 390, 'Speeder stats applied correctly');
 
 Game.selectedVehicle = 'tank';
 Game.startLevel(1);
-assert(Game.player.speedCap === 8.0 && Game.player.projectileDamage === 2 && Game.player.maxProjectiles === 4, 'Tank stats applied correctly');
+assert(Game.player.speedCap === 6.3 && Game.player.projectileDamage === 2 && Game.player.maxProjectiles === 4, 'Tank stats applied correctly');
+
+// 4a2. Double Jump mechanics (ground jump -> mid-air 2nd jump -> no 3rd jump -> resets on landing)
+Game.selectedVehicle = 'jeep';
+Game.startLevel(1);
+Game.player.isGrounded = true;
+Game.player.jumpsRemaining = 2;
+Game.triggerJump();
+assert(!Game.player.isGrounded && Game.player.vy < -10 && Game.player.jumpsRemaining === 1, '1st jump launches vehicle and leaves 1 mid-air jump');
+Game.player.vy = 2; // falling mid-air
+Game.triggerJump();
+assert(Game.player.vy < -10 && Game.player.jumpsRemaining === 0, '2nd jump (Double Jump) launches vehicle mid-air and uses remaining jump');
+Game.player.vy = 2;
+Game.triggerJump();
+assert(Game.player.vy === 2, '3rd mid-air jump is prevented until landing');
 
 // 4b. Jump on Up-Ramp & Elevator not eaten
 Game.selectedVehicle = 'jeep';
