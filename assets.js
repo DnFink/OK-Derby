@@ -1839,27 +1839,69 @@ const Assets = {
         ctx.restore();
     },
 
-    drawVillainRacer(ctx, x, y, w, h, wheelRotation = 0, frame = 0, difficulty = 'medium', isHovering = false, stunTimer = 0, dropFlash = 0) {
+    drawVillainRacer(ctx, x, y, w, h, wheelRotation = 0, frame = 0, difficulty = 'medium', isHovering = false, stunTimer = 0, dropFlash = 0, levelIndex = 1) {
         ctx.save();
         const wobbleY = isHovering ? Math.sin(frame * 0.25) * 3.5 : 0;
         const stunShake = stunTimer > 0 ? Math.sin(frame * 0.9) * 3 : 0;
         ctx.translate(x + stunShake, y + wobbleY);
 
-        const accentColor = difficulty === 'hard' ? '#ff3838' : (difficulty === 'easy' ? '#00cec9' : '#ff9f43');
-        const trimColor = difficulty === 'hard' ? '#9b59b6' : (difficulty === 'easy' ? '#e17055' : '#e74c3c');
+        // Per-level Rival skin palette & theme
+        const skin = levelIndex === 3 ? {
+            // Stage 3: Volcano Caldera — Magma Baron (Obsidian Lava Hellrod)
+            label: 'MAGMA RIVAL',
+            body: '#1c1117',
+            bodyHighlight: '#361b24',
+            trim: '#ff5722',
+            accent: '#ffeb3b',
+            jetOuter: 'rgba(255, 61, 0, 0.82)',
+            jetInner: '#fff176',
+            aura: 'rgba(255, 61, 0, 0.28)',
+            hatch: '#4a1414',
+            badgeBg: 'rgba(192, 57, 43, 0.92)',
+            eyeColor: '#fff176',
+            tikiHead: '#2b1b1e'
+        } : levelIndex === 2 ? {
+            // Stage 2: Waimea Canopy — Canopy Stalker (Jungle Vine & Bamboo Buggy)
+            label: 'JUNGLE RIVAL',
+            body: '#2d3a27',
+            bodyHighlight: '#4e342e',
+            trim: '#2ecc71',
+            accent: '#f1c40f',
+            jetOuter: 'rgba(46, 204, 113, 0.78)',
+            jetInner: '#ffeaa7',
+            aura: 'rgba(46, 204, 113, 0.24)',
+            hatch: '#1e4620',
+            badgeBg: 'rgba(30, 132, 73, 0.92)',
+            eyeColor: '#7bed9f',
+            tikiHead: '#4a3219'
+        } : {
+            // Stage 1: Waikiki Sands — Reef Raider (Shark-Fin Ocean Hotrod)
+            label: 'REEF RIVAL',
+            body: '#132743',
+            bodyHighlight: '#1f4068',
+            trim: '#ff5252',
+            accent: '#00e5ff',
+            jetOuter: 'rgba(0, 206, 201, 0.78)',
+            jetInner: '#ffffff',
+            aura: 'rgba(0, 229, 255, 0.24)',
+            hatch: '#0a3d62',
+            badgeBg: 'rgba(214, 48, 49, 0.90)',
+            eyeColor: '#00e5ff',
+            tikiHead: '#5d3a1a'
+        };
 
         // Subtle villain aura on Hard
         if (difficulty === 'hard') {
-            ctx.fillStyle = 'rgba(155, 89, 182, 0.22)';
+            ctx.fillStyle = skin.aura;
             ctx.beginPath();
-            ctx.ellipse(w * 0.5, h * 0.55, w * 0.65, h * 0.55, 0, 0, Math.PI * 2);
+            ctx.ellipse(w * 0.5, h * 0.55, w * 0.68, h * 0.58, 0, 0, Math.PI * 2);
             ctx.fill();
         }
 
         // Hover jet flames underneath when gliding over gaps/obstacles
         if (isHovering && stunTimer <= 0) {
             const jetLen = 10 + Math.sin(frame * 0.6) * 5;
-            ctx.fillStyle = 'rgba(155, 89, 182, 0.75)';
+            ctx.fillStyle = skin.jetOuter;
             ctx.beginPath();
             ctx.moveTo(w * 0.18, h * 0.78);
             ctx.lineTo(w * 0.26, h * 0.78 + jetLen + 5);
@@ -1869,7 +1911,7 @@ const Assets = {
             ctx.lineTo(w * 0.80, h * 0.78);
             ctx.fill();
 
-            ctx.fillStyle = '#fdcb6e';
+            ctx.fillStyle = skin.jetInner;
             ctx.beginPath();
             ctx.moveTo(w * 0.22, h * 0.78);
             ctx.lineTo(w * 0.26, h * 0.78 + jetLen * 0.65);
@@ -1882,15 +1924,15 @@ const Assets = {
 
         // Rear turbo exhaust flame
         if (stunTimer <= 0) {
-            const flameLen = 14 + Math.random() * 14;
-            ctx.fillStyle = trimColor;
+            const flameLen = (difficulty === 'hard' ? 18 : 13) + Math.random() * 14;
+            ctx.fillStyle = skin.trim;
             ctx.beginPath();
             ctx.moveTo(w * 0.04, h * 0.48);
             ctx.lineTo(-flameLen, h * 0.56);
             ctx.lineTo(w * 0.04, h * 0.66);
             ctx.closePath();
             ctx.fill();
-            ctx.fillStyle = '#fdcb6e';
+            ctx.fillStyle = skin.jetInner;
             ctx.beginPath();
             ctx.moveTo(w * 0.04, h * 0.52);
             ctx.lineTo(-flameLen * 0.5, h * 0.56);
@@ -1900,74 +1942,272 @@ const Assets = {
         }
 
         // Rear drop-chute hatch (glows brightly right when dropping a bomb/trap/goon)
-        ctx.fillStyle = dropFlash > 0 ? '#f1c40f' : '#4a235a';
+        ctx.fillStyle = dropFlash > 0 ? '#f1c40f' : skin.hatch;
         ctx.fillRect(-w * 0.03, h * 0.42, w * 0.16, h * 0.28);
-        ctx.strokeStyle = accentColor;
+        ctx.strokeStyle = skin.accent;
         ctx.lineWidth = 1.5;
         ctx.strokeRect(-w * 0.03, h * 0.42, w * 0.16, h * 0.28);
 
-        // Main dark obsidian chassis (sleek wedge hotrod)
-        ctx.fillStyle = '#1e272e';
+        // Stage-specific Rear Spoiler / Crest
+        if (levelIndex === 1) {
+            // Stage 1: Swept Shark Dorsal Fin Spoiler
+            ctx.fillStyle = skin.bodyHighlight;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.08, h * 0.42);
+            ctx.quadraticCurveTo(w * 0.02, h * 0.10, w * 0.22, h * 0.06);
+            ctx.quadraticCurveTo(w * 0.18, h * 0.26, w * 0.26, h * 0.36);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = skin.accent;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        } else if (levelIndex === 2) {
+            // Stage 2: Jungle Leaf Crest & Bamboo Roll Bar
+            ctx.fillStyle = '#27ae60';
+            ctx.beginPath();
+            ctx.moveTo(w * 0.10, h * 0.40);
+            ctx.lineTo(-w * 0.04, h * 0.16);
+            ctx.lineTo(w * 0.16, h * 0.24);
+            ctx.lineTo(w * 0.06, h * 0.06);
+            ctx.lineTo(w * 0.24, h * 0.34);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#d4ac0d';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.24, h * 0.38);
+            ctx.lineTo(w * 0.28, h * 0.08);
+            ctx.lineTo(w * 0.66, h * 0.08);
+            ctx.lineTo(w * 0.72, h * 0.38);
+            ctx.stroke();
+        } else {
+            // Stage 3: Twin Volcanic Exhaust Pipes / Obsidian Horns
+            ctx.fillStyle = '#2c2c2c';
+            ctx.strokeStyle = skin.trim;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.08, h * 0.42);
+            ctx.lineTo(-w * 0.02, h * 0.10);
+            ctx.lineTo(w * 0.10, h * 0.14);
+            ctx.lineTo(w * 0.18, h * 0.38);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            // Embers from top of pipe
+            if (stunTimer <= 0) {
+                ctx.fillStyle = frame % 6 < 3 ? '#ffeb3b' : '#ff5722';
+                ctx.beginPath();
+                ctx.arc(w * 0.03, h * 0.06 - (frame % 8), 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Main Chassis (distinct silhouette per stage)
+        ctx.fillStyle = skin.body;
         ctx.beginPath();
-        ctx.moveTo(w * 0.05, h * 0.42);
-        ctx.lineTo(w * 0.32, h * 0.34);
-        ctx.lineTo(w * 0.78, h * 0.38);
-        ctx.lineTo(w * 1.0, h * 0.56);
-        ctx.lineTo(w * 0.94, h * 0.74);
-        ctx.lineTo(w * 0.08, h * 0.74);
+        if (levelIndex === 1) {
+            // Sleek torpedo-nosed beach shark hotrod
+            ctx.moveTo(w * 0.05, h * 0.42);
+            ctx.lineTo(w * 0.30, h * 0.34);
+            ctx.lineTo(w * 0.80, h * 0.36);
+            ctx.quadraticCurveTo(w * 1.04, h * 0.48, w * 0.96, h * 0.74);
+            ctx.lineTo(w * 0.08, h * 0.74);
+        } else if (levelIndex === 2) {
+            // Rugged carved-wood jungle off-roader
+            ctx.moveTo(w * 0.04, h * 0.38);
+            ctx.lineTo(w * 0.26, h * 0.32);
+            ctx.lineTo(w * 0.76, h * 0.34);
+            ctx.lineTo(w * 0.96, h * 0.48);
+            ctx.lineTo(w * 0.94, h * 0.74);
+            ctx.lineTo(w * 0.08, h * 0.74);
+        } else {
+            // Angular spiked obsidian magma wedge
+            ctx.moveTo(w * 0.04, h * 0.40);
+            ctx.lineTo(w * 0.32, h * 0.30);
+            ctx.lineTo(w * 0.78, h * 0.38);
+            ctx.lineTo(w * 1.04, h * 0.54);
+            ctx.lineTo(w * 0.92, h * 0.74);
+            ctx.lineTo(w * 0.08, h * 0.74);
+        }
         ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = trimColor;
+        ctx.strokeStyle = skin.trim;
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Crimson/purple racing flame stripe on chassis
-        ctx.fillStyle = trimColor;
-        ctx.beginPath();
-        ctx.moveTo(w * 0.22, h * 0.50);
-        ctx.lineTo(w * 0.78, h * 0.48);
-        ctx.lineTo(w * 0.88, h * 0.58);
-        ctx.lineTo(w * 0.30, h * 0.62);
-        ctx.closePath();
-        ctx.fill();
+        // Stage-specific Chassis Decals & Front Ram
+        if (levelIndex === 1) {
+            // Ocean wave stripe + Shark-mouth teeth on nose
+            ctx.fillStyle = skin.trim;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.16, h * 0.50);
+            ctx.lineTo(w * 0.68, h * 0.46);
+            ctx.lineTo(w * 0.74, h * 0.58);
+            ctx.lineTo(w * 0.22, h * 0.62);
+            ctx.closePath();
+            ctx.fill();
 
-        // Spiked front bumper ram
-        ctx.fillStyle = '#b2bec3';
-        ctx.beginPath();
-        ctx.moveTo(w * 0.96, h * 0.48);
-        ctx.lineTo(w * 1.12, h * 0.54);
-        ctx.lineTo(w * 0.98, h * 0.60);
-        ctx.lineTo(w * 1.10, h * 0.66);
-        ctx.lineTo(w * 0.94, h * 0.72);
-        ctx.closePath();
-        ctx.fill();
+            // Shark teeth grin on front fender
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(w * 0.72, h * 0.52);
+            ctx.lineTo(w * 0.76, h * 0.64);
+            ctx.lineTo(w * 0.80, h * 0.52);
+            ctx.lineTo(w * 0.84, h * 0.64);
+            ctx.lineTo(w * 0.88, h * 0.52);
+            ctx.lineTo(w * 0.92, h * 0.64);
+            ctx.lineTo(w * 0.96, h * 0.52);
+            ctx.closePath();
+            ctx.fill();
 
-        // Cockpit & Mischievous Tiki Bandit Driver
-        ctx.fillStyle = '#3d2817'; // Dark carved tiki head
+            // Harpoon-barbed front bumper
+            ctx.fillStyle = '#00e5ff';
+            ctx.beginPath();
+            ctx.moveTo(w * 0.96, h * 0.48);
+            ctx.lineTo(w * 1.14, h * 0.58);
+            ctx.lineTo(w * 0.95, h * 0.68);
+            ctx.closePath();
+            ctx.fill();
+        } else if (levelIndex === 2) {
+            // Glowing vine & tribal zigzag paint
+            ctx.strokeStyle = skin.trim;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.14, h * 0.56);
+            ctx.lineTo(w * 0.28, h * 0.46);
+            ctx.lineTo(w * 0.42, h * 0.60);
+            ctx.lineTo(w * 0.56, h * 0.46);
+            ctx.lineTo(w * 0.70, h * 0.60);
+            ctx.lineTo(w * 0.84, h * 0.48);
+            ctx.stroke();
+
+            // Twin carved bamboo-tusk ram
+            ctx.fillStyle = '#f5deb3';
+            ctx.strokeStyle = '#8d6e63';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.94, h * 0.48);
+            ctx.quadraticCurveTo(w * 1.10, h * 0.46, w * 1.14, h * 0.36);
+            ctx.lineTo(w * 0.96, h * 0.58);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(w * 0.94, h * 0.60);
+            ctx.quadraticCurveTo(w * 1.08, h * 0.64, w * 1.12, h * 0.56);
+            ctx.lineTo(w * 0.94, h * 0.70);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        } else {
+            // Pulsing glowing magma cracks on obsidian chassis
+            const pulse = 0.7 + Math.sin(frame * 0.18) * 0.3;
+            ctx.strokeStyle = `rgba(255, 160, 0, ${pulse})`;
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.18, h * 0.58);
+            ctx.lineTo(w * 0.38, h * 0.48);
+            ctx.lineTo(w * 0.56, h * 0.56);
+            ctx.lineTo(w * 0.78, h * 0.46);
+            ctx.lineTo(w * 0.92, h * 0.58);
+            ctx.stroke();
+
+            // Molten horned front ram
+            ctx.fillStyle = '#ff5722';
+            ctx.beginPath();
+            ctx.moveTo(w * 0.96, h * 0.44);
+            ctx.lineTo(w * 1.16, h * 0.48);
+            ctx.lineTo(w * 1.00, h * 0.58);
+            ctx.lineTo(w * 1.14, h * 0.68);
+            ctx.lineTo(w * 0.92, h * 0.72);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Cockpit & Stage-themed Tiki Rival Driver
+        ctx.fillStyle = skin.tikiHead;
         ctx.fillRect(w * 0.34, h * 0.06, w * 0.28, h * 0.32);
         ctx.strokeStyle = '#111';
         ctx.lineWidth = 1.5;
         ctx.strokeRect(w * 0.34, h * 0.06, w * 0.28, h * 0.32);
 
-        // Villain spiked crown / bandana
-        ctx.fillStyle = accentColor;
-        ctx.beginPath();
-        ctx.moveTo(w * 0.32, h * 0.12);
-        ctx.lineTo(w * 0.38, -h * 0.06);
-        ctx.lineTo(w * 0.46, h * 0.08);
-        ctx.lineTo(w * 0.52, -h * 0.08);
-        ctx.lineTo(w * 0.58, h * 0.08);
-        ctx.lineTo(w * 0.64, -h * 0.04);
-        ctx.lineTo(w * 0.64, h * 0.14);
-        ctx.closePath();
-        ctx.fill();
+        // Stage-specific Driver Headgear
+        if (levelIndex === 1) {
+            // Pirate Bandana + fluttering tail
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillRect(w * 0.32, h * 0.02, w * 0.32, h * 0.11);
+            ctx.beginPath();
+            ctx.moveTo(w * 0.32, h * 0.06);
+            ctx.lineTo(w * 0.20, h * 0.02 + Math.sin(frame * 0.3) * 3);
+            ctx.lineTo(w * 0.22, h * 0.14 + Math.sin(frame * 0.3) * 3);
+            ctx.closePath();
+            ctx.fill();
+            // White skull dot on bandana
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(w * 0.48, h * 0.075, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (levelIndex === 2) {
+            // Feathered Jungle Shaman Headdress
+            const featherColors = ['#2ecc71', '#f1c40f', '#e67e22', '#2ecc71'];
+            for (let i = 0; i < 4; i++) {
+                ctx.fillStyle = featherColors[i];
+                const fx = w * (0.35 + i * 0.085);
+                ctx.beginPath();
+                ctx.ellipse(fx, h * 0.0, 3.5, 9, (i - 1.5) * 0.25, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#d4ac0d';
+            ctx.fillRect(w * 0.33, h * 0.06, w * 0.30, h * 0.06);
+        } else {
+            // Blazing Volcanic Flame Crown
+            const flicker = Math.sin(frame * 0.4) * 3;
+            ctx.fillStyle = '#ff3d00';
+            ctx.beginPath();
+            ctx.moveTo(w * 0.32, h * 0.10);
+            ctx.lineTo(w * 0.38, -h * 0.12 + flicker);
+            ctx.lineTo(w * 0.45, h * 0.04);
+            ctx.lineTo(w * 0.50, -h * 0.18 - flicker);
+            ctx.lineTo(w * 0.55, h * 0.04);
+            ctx.lineTo(w * 0.62, -h * 0.10 + flicker);
+            ctx.lineTo(w * 0.64, h * 0.10);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#ffeb3b';
+            ctx.beginPath();
+            ctx.moveTo(w * 0.38, h * 0.08);
+            ctx.lineTo(w * 0.49, -h * 0.08 - flicker * 0.5);
+            ctx.lineTo(w * 0.58, h * 0.08);
+            ctx.closePath();
+            ctx.fill();
+        }
 
-        // Glowing angry villain eyes
-        ctx.fillStyle = stunTimer > 0 ? '#dfe6e9' : '#f1c40f';
-        ctx.beginPath();
-        ctx.arc(w * 0.44, h * 0.22, 3.5, 0, Math.PI * 2);
-        ctx.arc(w * 0.56, h * 0.22, 3.5, 0, Math.PI * 2);
-        ctx.fill();
+        // Glowing angry villain eyes (Stage 1 has a pirate eyepatch on left eye!)
+        if (levelIndex === 1) {
+            // Left eyepatch
+            ctx.fillStyle = '#111';
+            ctx.beginPath();
+            ctx.arc(w * 0.43, h * 0.22, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#111';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.34, h * 0.16);
+            ctx.lineTo(w * 0.50, h * 0.24);
+            ctx.stroke();
+            // Right glowing cyan eye
+            ctx.fillStyle = stunTimer > 0 ? '#dfe6e9' : skin.eyeColor;
+            ctx.beginPath();
+            ctx.arc(w * 0.56, h * 0.22, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.fillStyle = stunTimer > 0 ? '#dfe6e9' : skin.eyeColor;
+            ctx.beginPath();
+            ctx.arc(w * 0.44, h * 0.22, 3.5, 0, Math.PI * 2);
+            ctx.arc(w * 0.56, h * 0.22, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         // Slanted brows
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
@@ -1987,7 +2227,7 @@ const Assets = {
         this.drawWheel(ctx, w * 0.25, h * 0.76, w * 0.14, wheelRotation);
         this.drawWheel(ctx, w * 0.74, h * 0.76, w * 0.14, wheelRotation);
         // Glowing hubcaps
-        ctx.fillStyle = accentColor;
+        ctx.fillStyle = skin.accent;
         ctx.beginPath();
         ctx.arc(w * 0.25, h * 0.76, 3.5, 0, Math.PI * 2);
         ctx.arc(w * 0.74, h * 0.76, 3.5, 0, Math.PI * 2);
@@ -2007,13 +2247,13 @@ const Assets = {
         }
 
         // Floating RIVAL overhead pill badge
-        ctx.fillStyle = stunTimer > 0 ? 'rgba(243, 156, 18, 0.9)' : 'rgba(214, 48, 49, 0.88)';
-        ctx.fillRect(w * 0.15, -h * 0.46, w * 0.70, 15);
+        ctx.fillStyle = stunTimer > 0 ? 'rgba(243, 156, 18, 0.92)' : skin.badgeBg;
+        ctx.fillRect(w * 0.04, -h * 0.48, w * 0.92, 15);
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 10px Arial';
+        ctx.font = 'bold 9.5px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(stunTimer > 0 ? 'STUNNED!' : 'RIVAL', w * 0.5, -h * 0.46 + 8);
+        ctx.fillText(stunTimer > 0 ? 'STUNNED!' : skin.label, w * 0.5, -h * 0.48 + 8);
 
         ctx.restore();
     },

@@ -225,8 +225,13 @@ const Game = {
             this.player.jumpGraceTimer = 6;
             AudioEngine.playSFX('jump');
         } else if (this.player.jumpsRemaining > 0) {
-            // Mid-air double jump!
-            this.player.vy = -this.player.jumpForce * 0.92;
+            // Mid-air double jump! Preserve part of upward momentum so fast double-taps always go noticeably higher
+            const baseDoubleJump = -this.player.jumpForce * 0.95;
+            if (this.player.vy < 0) {
+                this.player.vy = Math.max(-this.player.jumpForce * 1.42, baseDoubleJump + this.player.vy * 0.45);
+            } else {
+                this.player.vy = baseDoubleJump;
+            }
             this.player.jumpsRemaining = 0;
             this.player.jumpGraceTimer = 6;
             AudioEngine.playSFX('doubleJump');
@@ -2407,9 +2412,9 @@ const Game = {
             ctx.fill();
         }
 
-        // Villain marker (crimson/purple)
+        // Villain marker (stage-themed rival color)
         const vx = trackX + trackW * villainPct;
-        ctx.fillStyle = '#ff3838';
+        ctx.fillStyle = this.levelIndex === 3 ? '#ff5722' : (this.levelIndex === 2 ? '#2ecc71' : '#ff3838');
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
@@ -2636,7 +2641,8 @@ const Game = {
                 this.villainDifficulty,
                 this.villain.isHovering,
                 this.villain.stunTimer,
-                this.villain.dropFlash
+                this.villain.dropFlash,
+                this.levelIndex
             );
         }
 
